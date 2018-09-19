@@ -44,6 +44,7 @@
               <img width="100%" :src="PictureCardPreviewMain" alt="">
             </el-dialog>
           <div class="form-tips">注：请上传一张 ！ 上传多张以新上传的图片为准</div>
+          <div class="form-tips">图片编号：0</div>
         </el-form-item>
         <el-form-item label="商品主页轮播图">
           <el-upload
@@ -62,11 +63,12 @@
             <img width="100%" :src="PictureCardPreviewLoop" alt="">
           </el-dialog>
           <div class="form-tips">注：商品详情页的轮播图</div>
+          <div class="form-tips">图片编号：1、2、3...</div>
         </el-form-item>
-        <div @click='getImageMap'>显示规格</div>
+        <!-- <div @click='getImageMap'>显示规格</div> -->
         <el-form-item label="商品规格">
-          <template v-for="(item, keyindex) in SpecificationsKey.keylist" >
-            <div class="SpecificationsKey_area">
+          <template v-for="(item, keyindex) in SpecificationsKey.keylist">
+            <div class="SpecificationsKey_area" :key="keyindex">
               <el-input class="SpecificationsKey_area_key_input"
               v-model="SpecificationsKey.keylist[keyindex].value"
               :placeholder="'规格名' + keyindex" @keyup.native="updateTableTitleData()">
@@ -79,7 +81,7 @@
               </template>
             </el-input>
             <template v-for="(item, valueindex) in SpecificationsKey.keylist[keyindex].valuelist">
-              <div class="SpecificationsValue_area">
+              <div class="SpecificationsValue_area" :key="valueindex">
                 <el-input
                 v-model="SpecificationsKey.keylist[keyindex].valuelist[valueindex].value"
                 :placeholder="'规格值' + keyindex + '_' + valueindex" @keyup.native="updateTableData()"
@@ -102,14 +104,14 @@
             请务必注意 ！<span style="color:#ff6666;"> 修改规格实质是删除重建 ！ 所以会导致用户正在操作的商品发生不可预知的错误 ！</span>
           </div>
         </el-form-item>
-        <el-form-item label="颜色图片">
+        <el-form-item label="图片编号">
           <template v-for="(item, keyindex) in SpecificationsKey.keylist" >
-            <div class="SpecificationsKey_area" v-if="SpecificationsKey.keylist[keyindex].value == '颜色'">
+            <div class="SpecificationsKey_area" :key="keyindex" v-if="SpecificationsKey.keylist[keyindex].value == '颜色'">
             <template v-for="(item, valueindex) in SpecificationsKey.keylist[keyindex].valuelist">
-              <div class="SpecificationsValue_area">
+              <div class="SpecificationsValue_area" :key="valueindex">
                 <el-input
                 v-model="SpecificationsKey.keylist[keyindex].valuelist[valueindex].pic_url"
-                :placeholder="'颜色对应的图片序号'"
+                :placeholder="'颜色对应的图片编号'"
                 >
                 <template slot="prepend">
                   {{SpecificationsKey.keylist[keyindex].valuelist[valueindex].value}}
@@ -852,6 +854,9 @@ export default {
     //重组sku数据
     reloadSkuInfo() {
       console.log(this.skuInfo);
+      let imgArr = this.infoForm.loop_img.map((e) => {
+        return e.fileUrl
+      })
       for (let f = 0;f < this.skuInfo.title.length;f++) {
         this.addSpecKey()
         for (let g = 1;g < this.skuInfo.value[f].length;g++) {
@@ -864,6 +869,8 @@ export default {
         for (var h = 0; h < this.skuInfo.value[i].length; h++) {
           // console.log(i,h);
           this.SpecificationsKey.keylist[i].valuelist[h].value = this.skuInfo.value[i][h].value
+          let pic_url = this.skuInfo.value[i][h].pic_url;
+          if (pic_url) this.SpecificationsKey.keylist[i].valuelist[h].pic_url = imgArr.indexOf(pic_url) + 1
         }
       }
       this.setTableOldTitleData()
