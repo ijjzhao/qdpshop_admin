@@ -63,6 +63,7 @@
           </el-dialog>
           <div class="form-tips">注：商品详情页的轮播图</div>
         </el-form-item>
+        <div @click='getImageMap'>显示规格</div>
         <el-form-item label="商品规格">
           <template v-for="(item, keyindex) in SpecificationsKey.keylist" >
             <div class="SpecificationsKey_area">
@@ -100,6 +101,24 @@
           <div class="form-tips">
             请务必注意 ！<span style="color:#ff6666;"> 修改规格实质是删除重建 ！ 所以会导致用户正在操作的商品发生不可预知的错误 ！</span>
           </div>
+        </el-form-item>
+        <el-form-item label="颜色图片">
+          <template v-for="(item, keyindex) in SpecificationsKey.keylist" >
+            <div class="SpecificationsKey_area" v-if="SpecificationsKey.keylist[keyindex].value == '颜色'">
+            <template v-for="(item, valueindex) in SpecificationsKey.keylist[keyindex].valuelist">
+              <div class="SpecificationsValue_area">
+                <el-input
+                v-model="SpecificationsKey.keylist[keyindex].valuelist[valueindex].pic_url"
+                :placeholder="'颜色对应的图片序号'"
+                >
+                <template slot="prepend">
+                  {{SpecificationsKey.keylist[keyindex].valuelist[valueindex].value}}
+                </template>
+              </el-input>
+              </div>
+            </template>
+            </div>
+          </template>
         </el-form-item>
         <el-form-item label="规格明细">
           <el-table :data="tableData" border style="width: 100%">
@@ -457,6 +476,12 @@ export default {
       console.log(this.tableData);
       console.log(this.FirstClassifyId);
       console.log(this.SecondClassifyId);
+      let imageMap = this.getImageMap();
+
+      if (!imageMap) {
+        this.$message.error('请选择颜色对应的图片!')
+        return false
+      }
       if(this.FirstClassifyId == '' || this.SecondClassifyId == ''){
         this.$message.error("请选择分类 ！")
         return false
@@ -531,7 +556,8 @@ export default {
               oldtitle: this.tableOldTitleData,
               title: this.tabletitleData,
               value: this.tableData,
-              unDeacartesList: this.unDeacartesRideList
+              unDeacartesList: this.unDeacartesRideList,
+              imageMap: imageMap
             }).then(resspec => {
               console.log(resspec);
               if (resspec.data.errno === 200 || resspec.data.errno === 400){
@@ -562,6 +588,30 @@ export default {
             });
           }
         })
+    },
+    getImageMap() {
+      let arr = this.SpecificationsKey.keylist
+      let imageMap = {}
+      for (let i in arr) {
+        if (arr[i].value == '颜色') {
+          let list = arr[i].valuelist;
+          for (let j in list) {
+            if (list[j].pic_url) {
+              let index = parseInt(list[j].pic_url) - 1;
+              if (index > this.infoForm.loop_img.length - 1) return null
+              if (index == -1) {
+                imageMap[list[j].value] = this.infoForm.main_img;
+              } else {
+                imageMap[list[j].value] = this.infoForm.loop_img[index].fileUrl
+              }
+            } else {
+              return null
+            }
+          }
+        }
+      }
+      console.log(imageMap)
+      return imageMap
     },
     ////////////////////////////////////////////以下为表格更新操作
     SyncSetAllPrice() {
