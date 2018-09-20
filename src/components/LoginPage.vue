@@ -168,6 +168,8 @@ export default {
     // console.log(api.CorporateName);
     this.CorporateName = api.CorporateName
     // console.log(that.vaptcha);
+    
+    /*
     this.axios.get('auth/getVaptcha').then((res) => {
       console.log(res);
       // console.log(that.vaptcha);
@@ -204,17 +206,18 @@ export default {
       }
 
     })
+    */
   },
   methods: {
     show() {
       this.startLogin()
     },
     startLogin() {
-      if (!this.form.token) {
-        this.$message.error('请进行人机验证！');
-        // alert('请进行人机验证');
-        // return false;
-      }
+      // if (!this.form.token) {
+      //   this.$message.error('请进行人机验证！');
+      //   // alert('请进行人机验证');
+      //   // return false;
+      // }
       this.$refs['form'].validate((valid) => {
         if (!valid) {
           return false;
