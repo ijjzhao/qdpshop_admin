@@ -428,7 +428,7 @@ export default {
     } else {
       this.getGoodsInfo()
     }
-    this.gettoken();
+    // this.gettoken();
     this.getsupplier();
     this.findGoodsClassifyFirst()
   },
