@@ -343,7 +343,7 @@ export default {
         'X-Nideshop-Token': localStorage.getItem('token') || '',
       }, // 有的图片服务器要求请求头需要有token之类的参数，写在这里
       uploadToken: {
-        token: ''
+        token: 'dKawexMpnY_7Zmek8aJ0RbtatIqTIMvyurd2xdXM:GozPjXRiBcYJW4Y53qGtPvHH_XI=:eyJzY29wZSI6InFpbmdkYXBlaSIsImRlYWRsaW5lIjoxODUzMDQzMzU3fQ=='
       },
       dialogVisibleMain: false, //主图 查看
       PictureCardPreviewMain: '', //主图 查看的链接
@@ -598,21 +598,25 @@ export default {
         if (arr[i].value == '颜色') {
           let list = arr[i].valuelist;
           for (let j in list) {
-            if (list[j].pic_url) {
+            if (list[j].pic_url != undefined) {
               let index = parseInt(list[j].pic_url) - 1;
-              if (index > this.infoForm.loop_img.length - 1) return null
+              if (index > this.infoForm.loop_img.length - 1) {
+                // console.log(`index: ${index} > img length ${this.infoForm.loop_img.length - 1}`)
+                return null
+              }
               if (index == -1) {
                 imageMap[list[j].value] = this.infoForm.main_img;
               } else {
                 imageMap[list[j].value] = this.infoForm.loop_img[index].fileUrl
               }
             } else {
+              // console.log(`list[${j}] no pic_url`)
               return null
             }
           }
         }
       }
-      console.log(imageMap)
+      // console.log(imageMap)
       return imageMap
     },
     ////////////////////////////////////////////以下为表格更新操作
