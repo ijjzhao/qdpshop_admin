@@ -19,7 +19,10 @@
           <div class="tiptitle">
             优惠券基础信息
           </div>
-          <el-form-item label="卡券logo">
+          <el-form-item label="微信卡券">
+            <el-checkbox v-model="isWxcard" :disabled="is_edit">{{isWxcard ? '是':'否'}}</el-checkbox>
+          </el-form-item>
+          <el-form-item label="卡券logo" v-if="isWxcard">
             <el-upload action="http://upload.qiniup.com"
               :data="uploadToken"
               list-type="picture-card"
@@ -34,7 +37,7 @@
               <img width="100%" :src="ruleForm.logo_url" alt="">
             </el-dialog>
           </el-form-item>
-          <el-form-item label="卡券颜色">
+          <el-form-item label="卡券颜色" v-if="isWxcard">
             <el-dropdown @command="handleColorClick" trigger="click">
               <el-button :class="ruleForm.color">
                 {{ruleForm.color ? ruleForm.color : '选择颜色'}}<i class="el-icon-arrow-down el-icon--right"></i>
@@ -58,39 +61,34 @@
             </el-dropdown>
           </el-form-item>
           <el-form-item label="卡券名称" >
-            <el-input style="width:280px;" placeholder="请输入优惠券名称" v-model="ruleForm.name" ></el-input>
+            <el-input style="width:280px;" placeholder="请输入优惠券名称" v-model="ruleForm.name" :disabled="is_edit && isWxcard"></el-input>
           </el-form-item>
-          <el-form-item label="卡券标题" >
-            <el-input style="width:280px;" placeholder="请输入卡券标题" v-model="ruleForm.title" ></el-input>
-          </el-form-item>
-          <el-form-item label="卡券副标题" >
-            <el-input style="width:280px;" placeholder="请输入优惠券名称" v-model="ruleForm.sub_title" ></el-input>
-          </el-form-item>
+          
           <el-form-item label="发放数量" >
-            <el-input type="number" :min="1" style="width:100px;" v-model="ruleForm.number"></el-input>
+            <el-input type="number" :min="1" style="width:100px;" v-model="ruleForm.number" :disabled="is_edit && isWxcard"></el-input>
             <span style="font-size:16px;color:#8391a5">张</span>
           </el-form-item>
           <el-form-item label="优惠券形式" style="margin-bottom:15px;" >
             <el-radio-group v-model="cupfromradio" @change="cupfromradiochanged">
-              <el-radio :label="1">指定金额</el-radio>
-              <el-radio :label="2">折扣</el-radio>
+              <el-radio :label="1" :disabled="is_edit">指定金额</el-radio>
+              <el-radio :label="2" :disabled="is_edit">折扣</el-radio>
             </el-radio-group>
             <div class="cupfromarea" v-show="cupfromradio == 1">
-              面值：<el-input type="number" :min="0" style="width:100px;" v-model="ruleForm.value"></el-input>
+              面值：<el-input type="number" :min="0" style="width:100px;" v-model="ruleForm.value" :disabled="is_edit && isWxcard"></el-input>
               <span class="cupfromareatip">元</span>
             </div>
             <div  class="cupfromarea" v-show="cupfromradio == 2">
-              折扣：<el-input type="number" :min="1" :max="10" style="width:100px;" v-model="ruleForm.value"></el-input>
+              折扣：<el-input type="number" :min="1" :max="10" style="width:100px;" v-model="ruleForm.value" :disabled="is_edit && isWxcard"></el-input>
               <span class="cupfromareatip">折</span>
             </div>
           </el-form-item>
           <el-form-item label="使用门槛"  >
             <el-radio-group  v-model="cuplimtradio">
-              <el-radio :label="4">无限制</el-radio>
-              <el-radio :label="5">限制</el-radio>
+              <el-radio :label="4" :disabled="is_edit">无限制</el-radio>
+              <el-radio :label="5" :disabled="is_edit">限制</el-radio>
             </el-radio-group>
             <div class="cupfromarea" v-show="cuplimtradio == 5">
-              满 <el-input type="number" :min="1" style="width:100px;" v-model="ruleForm.limit_price"></el-input> 元可用
+              满 <el-input type="number" :min="1" style="width:100px;" v-model="ruleForm.limit_price" :disabled="is_edit && isWxcard"></el-input> 元可用
               <!-- <span class="cupfromareatip">元</span> -->
             </div>
           </el-form-item>
@@ -302,8 +300,6 @@ export default {
         logo_url: '',
         color: '',
         name: "", //名称
-        title: '',
-        sub_title: '',
         number: "", //数量
         // discount: '', //打折
         value: "", //面值和折扣
@@ -325,6 +321,7 @@ export default {
       },
       logoImg:[],
       dialogVisibleLogo: false,
+      isWxcard: false, // 是否是微信卡券
     };
   },
   mounted() {
@@ -384,8 +381,6 @@ export default {
           this.logoImg = [obj]
           this.ruleForm.color = res.data.data.color;
           this.ruleForm.name = res.data.data.coupon_name;
-          this.ruleForm.title = res.data.data.title;
-          this.ruleForm.sub_title = res.data.data.sub_title;
           this.ruleForm.number = res.data.data.coupon_number;
           this.ruleForm.value = res.data.data.coupon_value;
           this.cupfromradio = res.data.data.coupon_type == 0 ? 1 : 2;
@@ -393,6 +388,7 @@ export default {
           this.ruleForm.limit_price = res.data.data.coupon_limit_value;
           this.cuplimtradio = res.data.data.coupon_limit == 0 ? 4 : 5;
           this.ruleForm.Instructions = res.data.data.Instructions;
+          this.isWxcard = res.data.data.isWxcard == 1
           // console.log(this.cupfromradio);
           // console.log(this.cuplimtradio);
         });
@@ -649,41 +645,45 @@ export default {
     submitForm(formName) {
       // console.log(this.cupfromradio);
       // console.log(this.cuplimtradio);
+      console.log(this.id);
       if (this.id !== 0) {
-        if (
-          this.ruleForm.logo_url == "" ||
-          this.ruleForm.name == "" ||
-          this.ruleForm.color == "" ||
-          this.ruleForm.number == "" ||
-          this.ruleForm.value == "" ||
-          this.ruleForm.limit_price == ""
-        ) {
-          this.$message.error("数据不完整！");
-          return false;
-        }
+         if (
+            this.ruleForm.logo_url == "" && this.isWxcard ||
+            this.ruleForm.color == "" && this.isWxcard ||
+            this.ruleForm.name == "" ||
+            this.ruleForm.number == "" ||
+            this.ruleForm.value == "" ||
+            this.ruleForm.limit_price == ""
+          ) {
+            this.$message.error("数据不完整！");
+            return false;
+          }
         let updatedinfo = {};
-        updatedinfo.logo_url = this.ruleForm.logo_url;
-        updatedinfo.name = this.ruleForm.name;
-        updatedinfo.title = this.ruleForm.title;
-        updatedinfo.sub_title = this.ruleForm.sub_title;
-        updatedinfo.color = this.ruleForm.color;
-        updatedinfo.number = this.ruleForm.number;
-        updatedinfo.value = this.ruleForm.value;
-        updatedinfo.limit_price = this.ruleForm.limit_price;
+        if (this.isWxcard) {
+          updatedinfo.logo_url = this.ruleForm.logo_url;
+          updatedinfo.color = this.ruleForm.color;
+        } else {
+          updatedinfo.name = this.ruleForm.name;
+          updatedinfo.number = this.ruleForm.number;
+          updatedinfo.value = this.ruleForm.value;
+          updatedinfo.limit_price = this.ruleForm.limit_price;
+        }
+        // updatedinfo.name = this.ruleForm.name;
         updatedinfo.Instructions = this.ruleForm.Instructions;
-        updatedinfo.type = this.cupfromradio == 1 ? 0 : 1;
-        updatedinfo.limit_type = this.cuplimtradio == 4 ? 0 : 1;
+        // updatedinfo.type = this.cupfromradio == 1 ? 0 : 1;
+        // updatedinfo.limit_type = this.cuplimtradio == 4 ? 0 : 1;
         // console.log(updatedinfo.type);
         // console.log(updatedinfo.limit_type);
         // console.log(updatedinfo);
         this.axios
           .post("coupon/couponupdate", {
             id: this.id,
+            isWxcard: this.isWxcard ? 1 : 0,
             coupon: updatedinfo
           })
           .then(res => {
-            // console.log(res);
-            if (res.status === 200) {
+            console.log(res);
+            if (res.data.errno === 0) {
               this.$message({
                 type: "success",
                 message: "更新成功!"
@@ -700,9 +700,9 @@ export default {
         //     if (this.ruleForm.name == '' || this.ruleForm.Instructions == ''|| this.ruleForm.value == '') { isComp = false }
         //   }else if(this.cupusergetradio == 14){
         if (
-          this.ruleForm.logo_url == "" ||
+          this.ruleForm.logo_url == "" && this.isWxcard ||
+          this.ruleForm.color == "" && this.isWxcard ||
           this.ruleForm.name == "" ||
-          this.ruleForm.color == "" ||
           this.ruleForm.number == "" ||
           this.ruleForm.user_number == "" ||
           this.ruleForm.Instructions == "" ||
@@ -785,7 +785,7 @@ export default {
           CupTime.end = new Date(this.ruleForm.datelimit[1]).getTime();
           CupTime.limit_day = CupTime.end - CupTime.start;
           CupTime.create = new Date().getTime();
-          console.log(CupTime);
+          // console.log(CupTime);
         } else if (this.cupableradio == 7) {
           //当日有效
           // CupTime.start = new Date().getTime()
@@ -794,7 +794,7 @@ export default {
           // CupTime.end = CupTime.start + (this.ruleForm.datestart * 86400000)
           CupTime.end = "";
           CupTime.create = new Date().getTime();
-          console.log(CupTime);
+          // console.log(CupTime);
         } else if (this.cupableradio == 8) {
           //次日有效
           // let Y = new Date().getFullYear()
@@ -852,11 +852,12 @@ export default {
             CupTime: CupTime,
             CupState: CupState,
             GoodsList: this.pointGoodsList,
-            UserList: this.pointUserList
+            UserList: this.pointUserList,
+            isWxcard: this.isWxcard ? 1 : 0
             // AbleEndTime:
           })
           .then(res => {
-            console.log(res);
+            // console.log(res);
             if (res.status === 200) {
               this.$message({
                 type: "success",
@@ -868,8 +869,8 @@ export default {
             }
           });
 
-        console.log(this.pointGoodsList);
-        console.log(this.pointUserList);
+        // console.log(this.pointGoodsList);
+        // console.log(this.pointUserList);
         // console.log(this.ruleForm);
         // console.log(this.);
         // console.log(this.datepicker);

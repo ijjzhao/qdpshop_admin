@@ -57,6 +57,13 @@
                       </div>
                     </template>
                   </el-table-column>
+                  <el-table-column align="center" label="微信" >
+                    <template slot-scope="scope">
+                      <div class="username_one">
+                        {{tableData[scope.$index].isWxcard == 1 ? '是' : '否'}}
+                      </div>
+                    </template>
+                  </el-table-column>
                   <el-table-column align="center"  label="注明">
                     <template slot-scope="scope">
                       <div class="username_one">
@@ -151,277 +158,312 @@
 
 <script>
 export default {
-  name:"CouponPage",
+  name: "CouponPage",
   data() {
-     return {
-       CouponCategory:'',//优惠券
-       CouponCategoryList:[],//优惠券种类列表
-       pointgoods: false,
-       pointuser: false,
-       pointgoodsData: [],
-       pointuserData: [],
-       page: 1,
-       total: 0,
-       tableData:[],
-       row:[],
-       filterForm:{
-         coupon_id: '',
-       },
-       uploaderHeader: {
-         'X-Nideshop-Token': localStorage.getItem('token') || '',
-       },
-     };
-   },
-   mounted(){
-     console.log("优惠券页面");
-     // this.axios.get()
-     this.getList()
-   },
-   methods: {
-     handleRowEdit (index,row){
-       this.$router.push({
-         name: 'addcoupon',
-         query: {
-           id: row.id
-         }
-       })
-     },
-     handlepointgoods(index,row){
-       // console.log(index,row);
-       // console.log(row.point_goods);
-       this.pointgoods = true
-       let pointgoodsList = row.point_goods.split(",")
-       console.log(pointgoodsList);
-       this.axios.post('coupon/findpointgoods',{
-         id:pointgoodsList
-       }).then((res) => {
-         console.log(res);
-         this.pointgoodsData = res.data.data
-       })
-       // for (var i = 0; i < pointgoodsList.length; i++) {
-       //   // array[i]
-       //
-       //
-       // }
-     },
-     handlepointuser(index,row){
-       // console.log(index,row);
-       // console.log(row.point_goods);
-       this.pointuser = true
-       let pointuserList = row.point_user.split(",")
-       for (var i = 0; i < pointuserList.length; i++) {
-         // array[i]
-         this.axios.post('coupon/findpointuser',{
-           id:pointuserList[i]
-         }).then((res) => {
-           console.log(res);
-           this.pointuserData = res.data.data
-         })
-
-       }
-     },
-     getList(){
-       this.axios.get('coupon', {
-         params: {
-           page: this.page,
-           couponname: this.filterForm.coupon_name,
-         }
-       }).then((response) => {
-         // console.log(response);
-         this.tableData = response.data.data.data
-         console.log(this.tableData);
-         for (var i = 0; i < this.tableData.length; i++) {
-           // let is_able = {}
-           let obj = {}
-           obj.is_able = this.tableData[i].coupon_isabled == 1 ? true : false
-           this.tableData[i].create_localtime = this.timestampToTime(this.tableData[i].validity_create)
-           if (this.tableData[i].validity_start == '' || this.tableData[i].validity_end == '') {
-             obj.is_outof = false
-             this.tableData[i].limit_localtime = this.timestampToDay(this.tableData[i].validity_limit_day)
-           }else {
-             if (new Date().getTime() > this.tableData[i].validity_end) {
-               console.log("已过期");
-               this.tableData[i].end_localtime = "已过期"
-               this.axios.post('coupon/setcupable', {
-                 id: this.tableData[i].coupon_id,
-                 data: 0
-               }).then((response) => {
-                 // console.log(response.data)
-                 // if (response.data.errno === 0) {
-                 //   this.$message({
-                 //     type: 'success',
-                 //     message: '修改成功!'
-                 //   });
-                 // }
-               })
-               obj.is_outof = true
-             }else {
-               this.tableData[i].end_localtime = this.timestampToTime(this.tableData[i].validity_end) + ' 到期 '
-               obj.is_outof = false
-             }
-           }
-           // this.row.is_able = this.tableData[i].coupon_isabled
-           if (this.tableData[i].validity_type == 0) {
-             obj.day_type = '固定日期' + '^'
-           }else if (this.tableData[i].validity_type == 1) {
-             obj.day_type = '即时生效' + '^'
-           }else if (this.tableData[i].validity_type == 2) {
-             obj.day_type = '次日生效' + '^'
-           }
-           if (this.tableData[i].coupon_limit == 0) {
-             obj.limit_type = '通用' +'^'
-           }else if (this.tableData[i].coupon_limit == 1) {
-             obj.limit_type = '满'+ this.tableData[i].coupon_limit_value + '元'+ '^'
-           }
-           if (this.tableData[i].coupon_type == 0) {
-             obj.type = '减' + (this.tableData[i].coupon_value / 1).toFixed(2) + '券'
-           }else if (this.tableData[i].coupon_type == 1) {
-             obj.type = this.tableData[i].coupon_value + '折券'
-           }
-           this.row.push(obj)
-           // this.tableData[i].start_localtime = this.timestampToTime(this.tableData[i].validity_start)
-           // this.tableData[i].end_localtime = this.timestampToTime(this.tableData[i].validity_end)
-           this.tableData[i].disprice = (this.tableData[i].coupon_value / 1).toFixed(2)
-
-
-         }
-         this.page = response.data.data.currentPage
-         this.total = response.data.data.count
-       })
-
-     },
-     timestampToDay(timestamp){
-       if (timestamp >= 86400000) {
-         var D = (timestamp / 86400000).toFixed(2)
-         var DL = D.split(".")
-         var Y = ((timestamp - (DL[0] * 86400000)) / 3600000).toFixed(2)
-         var YL = Y.split(".")
-         var H = ((timestamp - (DL[0] * 86400000) - (YL[0] * 3600000)) / 60000).toFixed(2)
-         var HL = H.split(".")
-         var M = ((timestamp - (DL[0] * 86000000) - (YL[0] * 3600000) - (HL[0] * 60000)) / 60000).toFixed(2)
-         var ML = M.split(".")
-         return DL[0] + " 天 " + YL[0] + " 小时 " + HL[0] + ' 分钟 '
-         // return DL[0] + " 天 " + YL[0] + " 小时 " + HL[0] + ' 分钟 '
-       }
-       if (timestamp == 0){
-         return "有效期错误"
-       }
-       // }else if (timestamp < 86400000 && timestamp >= 3600000){
-       //   var Y = (timestamp / 3600000).toFixed(2)
-       //   var YL = Y.split(".")
-       //   var H = ((timestamp - (YL[0] * 3600000)) / 60000).toFixed(2)
-       //   var HL = H.split(".")
-       //   // var M = ((timestamp  - (YL[0] * 3600000) - (HL[0] * 60000)) / 60000).toFixed(2)
-       //   // var ML = M.split(".")
-       //   return YL[0] + " 小时 " + HL[0] + ' 分钟 '
-       // }else if ( timestamp < 3600000 && timestamp >= 60000){
-       //   // var Y = (timestamp / 3600000).toFixed(2)
-       //   // var YL = Y.split(".")
-       //   var H = (timestamp / 60000).toFixed(2)
-       //   var HL = H.split(".")
-       //   // var M = ((timestamp - (HL[0] * 60000)) / 60000).toFixed(2)
-       //   // var ML = M.split(".")
-       //   return HL[0] + ' 分钟 '
-       // }
-
-     },
-     timestampToTime(timestamp) {
-         var date = new Date(timestamp * 1);
-         var Y = date.getFullYear() + '/';
-         var M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '/';
-         var D = (date.getDate() < 10 ? '0'+date.getDate() : date.getDate()) + '  ';
-         var h = (date.getHours() < 10 ? '0'+date.getHours() : date.getHours()) + ':';
-         var m = (date.getMinutes() < 10 ? '0'+date.getMinutes() : date.getMinutes()) + ':';
-         var s = (date.getSeconds() < 10 ? '0'+date.getSeconds() : date.getSeconds());
-         return Y+M+D+h+m+s;
-     },
-     //启用禁用优惠券
-     changeIsable(index,row){
-       console.log(index, row);
-       this.$confirm('是否修改优惠券' + row.coupon_name + '的启用状态吗' + '?', '修改实时生效！', {
-         confirmButtonText: '确定',
-         cancelButtonText: '取消',
-         type: 'warning'
-       }).then(() => {
-         this.axios.post('coupon/setcupable', {
-           id: row.coupon_id,
-           data: this.row[index].is_able ? 1 : 0
-         }).then((response) => {
-           console.log(response.data)
-           if (response.data.errno === 0) {
-             this.$message({
-               type: 'success',
-               message: '修改成功!'
-             });
-           }
-         })
-       }).catch(() => {
-         this.row[index].is_able = !this.row[index].is_able
-         this.$message({
-           type: 'info',
-           message: '已取消修改！'
-         });
-       });
-
-     },
-     //清空查询信息
-     onClear(){
-
-     },
-     //优惠券种类
-     CouponCategorychange(){
-
-     },
-     //下一页优惠券列表
-     handlePageChange(val){
-       this.page = val;
-       //保存到localStorage
-       localStorage.setItem('page', this.page)
-       this.getList()
-     },
-     //删除优惠券
-     handleRowDelete(index,row){
-       this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          this.axios.post('coupon/delcup',{
-            id:row.coupon_id
-          }).then((res) => {
-            console.log(res);
-            this.tableData = []
-            this.row = []
-            this.getList()
+    return {
+      CouponCategory: "", //优惠券
+      CouponCategoryList: [], //优惠券种类列表
+      pointgoods: false,
+      pointuser: false,
+      pointgoodsData: [],
+      pointuserData: [],
+      page: 1,
+      total: 0,
+      tableData: [],
+      row: [],
+      filterForm: {
+        coupon_id: ""
+      },
+      uploaderHeader: {
+        "X-Nideshop-Token": localStorage.getItem("token") || ""
+      }
+    };
+  },
+  mounted() {
+    console.log("优惠券页面");
+    // this.axios.get()
+    this.getList();
+  },
+  methods: {
+    handleRowEdit(index, row) {
+      this.$router.push({
+        name: "addcoupon",
+        query: {
+          id: row.id
+        }
+      });
+    },
+    handlepointgoods(index, row) {
+      // console.log(index,row);
+      // console.log(row.point_goods);
+      this.pointgoods = true;
+      let pointgoodsList = row.point_goods.split(",");
+      //  console.log(pointgoodsList);
+      this.axios
+        .post("coupon/findpointgoods", {
+          id: pointgoodsList
+        })
+        .then(res => {
+          //  console.log(res);
+          this.pointgoodsData = res.data.data;
+        });
+      // for (var i = 0; i < pointgoodsList.length; i++) {
+      //   // array[i]
+      //
+      //
+      // }
+    },
+    handlepointuser(index, row) {
+      // console.log(index,row);
+      // console.log(row.point_goods);
+      this.pointuser = true;
+      let pointuserList = row.point_user.split(",");
+      for (var i = 0; i < pointuserList.length; i++) {
+        // array[i]
+        this.axios
+          .post("coupon/findpointuser", {
+            id: pointuserList[i]
           })
-          this.$message({
-            type: 'success',
-            message: '删除成功!'
+          .then(res => {
+            //  console.log(res);
+            this.pointuserData = res.data.data;
           });
-        }).catch(() => {
+      }
+    },
+    getList() {
+      this.axios
+        .get("coupon", {
+          params: {
+            page: this.page,
+            couponname: this.filterForm.coupon_name
+          }
+        })
+        .then(response => {
+          // console.log(response);
+          this.tableData = response.data.data.data;
+          //  console.log(this.tableData);
+          for (var i = 0; i < this.tableData.length; i++) {
+            // let is_able = {}
+            let obj = {};
+            obj.is_able = this.tableData[i].coupon_isabled == 1 ? true : false;
+            this.tableData[i].create_localtime = this.timestampToTime(
+              this.tableData[i].validity_create
+            );
+            if (
+              this.tableData[i].validity_start == "" ||
+              this.tableData[i].validity_end == ""
+            ) {
+              obj.is_outof = false;
+              this.tableData[i].limit_localtime = this.timestampToDay(
+                this.tableData[i].validity_limit_day
+              );
+            } else {
+              if (new Date().getTime() > this.tableData[i].validity_end) {
+                //  console.log("已过期");
+                this.tableData[i].end_localtime = "已过期";
+                this.axios
+                  .post("coupon/setcupable", {
+                    id: this.tableData[i].coupon_id,
+                    data: 0
+                  })
+                  .then(response => {
+                    // console.log(response.data)
+                    // if (response.data.errno === 0) {
+                    //   this.$message({
+                    //     type: 'success',
+                    //     message: '修改成功!'
+                    //   });
+                    // }
+                  });
+                obj.is_outof = true;
+              } else {
+                this.tableData[i].end_localtime =
+                  this.timestampToTime(this.tableData[i].validity_end) +
+                  " 到期 ";
+                obj.is_outof = false;
+              }
+            }
+            // this.row.is_able = this.tableData[i].coupon_isabled
+            if (this.tableData[i].validity_type == 0) {
+              obj.day_type = "固定日期" + "^";
+            } else if (this.tableData[i].validity_type == 1) {
+              obj.day_type = "即时生效" + "^";
+            } else if (this.tableData[i].validity_type == 2) {
+              obj.day_type = "次日生效" + "^";
+            }
+            if (this.tableData[i].coupon_limit == 0) {
+              obj.limit_type = "通用" + "^";
+            } else if (this.tableData[i].coupon_limit == 1) {
+              obj.limit_type =
+                "满" + this.tableData[i].coupon_limit_value + "元" + "^";
+            }
+            if (this.tableData[i].coupon_type == 0) {
+              obj.type =
+                "减" + (this.tableData[i].coupon_value / 1).toFixed(2) + "券";
+            } else if (this.tableData[i].coupon_type == 1) {
+              obj.type = this.tableData[i].coupon_value + "折券";
+            }
+            this.row.push(obj);
+            // this.tableData[i].start_localtime = this.timestampToTime(this.tableData[i].validity_start)
+            // this.tableData[i].end_localtime = this.timestampToTime(this.tableData[i].validity_end)
+            this.tableData[i].disprice = (
+              this.tableData[i].coupon_value / 1
+            ).toFixed(2);
+          }
+          this.page = response.data.data.currentPage;
+          this.total = response.data.data.count;
+        });
+    },
+    timestampToDay(timestamp) {
+      if (timestamp >= 86400000) {
+        var D = (timestamp / 86400000).toFixed(2);
+        var DL = D.split(".");
+        var Y = ((timestamp - DL[0] * 86400000) / 3600000).toFixed(2);
+        var YL = Y.split(".");
+        var H = (
+          (timestamp - DL[0] * 86400000 - YL[0] * 3600000) /
+          60000
+        ).toFixed(2);
+        var HL = H.split(".");
+        var M = (
+          (timestamp - DL[0] * 86000000 - YL[0] * 3600000 - HL[0] * 60000) /
+          60000
+        ).toFixed(2);
+        var ML = M.split(".");
+        return DL[0] + " 天 " + YL[0] + " 小时 " + HL[0] + " 分钟 ";
+        // return DL[0] + " 天 " + YL[0] + " 小时 " + HL[0] + ' 分钟 '
+      }
+      if (timestamp == 0) {
+        return "有效期错误";
+      }
+      // }else if (timestamp < 86400000 && timestamp >= 3600000){
+      //   var Y = (timestamp / 3600000).toFixed(2)
+      //   var YL = Y.split(".")
+      //   var H = ((timestamp - (YL[0] * 3600000)) / 60000).toFixed(2)
+      //   var HL = H.split(".")
+      //   // var M = ((timestamp  - (YL[0] * 3600000) - (HL[0] * 60000)) / 60000).toFixed(2)
+      //   // var ML = M.split(".")
+      //   return YL[0] + " 小时 " + HL[0] + ' 分钟 '
+      // }else if ( timestamp < 3600000 && timestamp >= 60000){
+      //   // var Y = (timestamp / 3600000).toFixed(2)
+      //   // var YL = Y.split(".")
+      //   var H = (timestamp / 60000).toFixed(2)
+      //   var HL = H.split(".")
+      //   // var M = ((timestamp - (HL[0] * 60000)) / 60000).toFixed(2)
+      //   // var ML = M.split(".")
+      //   return HL[0] + ' 分钟 '
+      // }
+    },
+    timestampToTime(timestamp) {
+      var date = new Date(timestamp * 1);
+      var Y = date.getFullYear() + "/";
+      var M =
+        (date.getMonth() + 1 < 10
+          ? "0" + (date.getMonth() + 1)
+          : date.getMonth() + 1) + "/";
+      var D =
+        (date.getDate() < 10 ? "0" + date.getDate() : date.getDate()) + "  ";
+      var h =
+        (date.getHours() < 10 ? "0" + date.getHours() : date.getHours()) + ":";
+      var m =
+        (date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes()) +
+        ":";
+      var s =
+        date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+      return Y + M + D + h + m + s;
+    },
+    //启用禁用优惠券
+    changeIsable(index, row) {
+      console.log(index, row);
+      this.$confirm(
+        "是否修改优惠券" + row.coupon_name + "的启用状态吗" + "?",
+        "修改实时生效！",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }
+      )
+        .then(() => {
+          this.axios
+            .post("coupon/setcupable", {
+              id: row.coupon_id,
+              data: this.row[index].is_able ? 1 : 0
+            })
+            .then(response => {
+              //  console.log(response.data)
+              if (response.data.errno === 0) {
+                this.$message({
+                  type: "success",
+                  message: "修改成功!"
+                });
+              }
+            });
+        })
+        .catch(() => {
+          this.row[index].is_able = !this.row[index].is_able;
           this.$message({
-            type: 'info',
-            message: '已取消删除'
+            type: "info",
+            message: "已取消修改！"
           });
         });
-
-     },
-     // //查看优惠券
-     // handleRowEdit(){
-     //
-     // },
-     //查询优惠券
-     onSubmitFilter(){
-       this.getList()
-     }
-
-   }
+    },
+    //清空查询信息
+    onClear() {},
+    //优惠券种类
+    CouponCategorychange() {},
+    //下一页优惠券列表
+    handlePageChange(val) {
+      this.page = val;
+      //保存到localStorage
+      localStorage.setItem("page", this.page);
+      this.getList();
+    },
+    //删除优惠券
+    handleRowDelete(index, row) {
+      this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.axios
+            .post("coupon/delcup", {
+              id: row.coupon_id
+            })
+            .then(res => {
+              // console.log(res);
+              this.tableData = [];
+              this.row = [];
+              this.getList();
+            });
+          this.$message({
+            type: "success",
+            message: "删除成功!"
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
+        });
+    },
+    // //查看优惠券
+    // handleRowEdit(){
+    //
+    // },
+    //查询优惠券
+    onSubmitFilter() {
+      this.getList();
+    }
   }
-  </script>
+};
+</script>
 
 <style lang="css" scoped>
 .username_one {
-  overflow : hidden;
+  overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -430,12 +472,11 @@ export default {
 .Cuppointgoods_area {
   margin: 12px;
   width: 400px;
-
 }
 .Cuppointgoods_area_title {
   text-align: center;
   font-weight: bold;
-  padding: 15px 0 25px 0 ;
+  padding: 15px 0 25px 0;
 }
 /* .el-upload--picture-card {
   width: 40px !important;
