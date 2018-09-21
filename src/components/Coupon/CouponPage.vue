@@ -105,14 +105,15 @@
                   </el-table-column> -->
                   <el-table-column prop="" align="center" width="92" label="启用">
                     <template slot-scope="scope">
-                        <el-switch :disabled="row[scope.$index].is_outof" v-model="row[scope.$index].is_able" @change="changeIsable(scope.$index, scope.row)">
+                        <el-switch :disabled="row[scope.$index].is_outof || (tableData[scope.$index].isWxcard == 1 && tableData[scope.$index].coupon_isabled == 0)"
+                        v-model="row[scope.$index].is_able" @change="changeIsable(scope.$index, scope.row)">
                         </el-switch>
                     </template>
                   </el-table-column>
                   <el-table-column label="操作" width="140"  align="center">
                       <template slot-scope="scope">
                           <el-button size="small" @click="handleRowEdit(scope.$index, scope.row)">编辑</el-button>
-                          <el-button size="small" type="danger" @click="handleRowDelete(scope.$index, scope.row)">删除</el-button>
+                          <el-button size="small" type="danger" @click="handleRowDelete(scope.$index, scope.row)" :disabled="tableData[scope.$index].isWxcard == 1">删除</el-button>
                       </template>
                   </el-table-column>
               </el-table>
@@ -180,8 +181,6 @@ export default {
     };
   },
   mounted() {
-    console.log("优惠券页面");
-    // this.axios.get()
     this.getList();
   },
   methods: {
@@ -374,16 +373,21 @@ export default {
     },
     //启用禁用优惠券
     changeIsable(index, row) {
-      console.log(index, row);
-      this.$confirm(
-        "是否修改优惠券" + row.coupon_name + "的启用状态吗" + "?",
-        "修改实时生效！",
-        {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
-        }
-      )
+      // console.log(index, row);
+      let isWxcard = this.tableData[index].isWxcard;
+      let dialogText;
+      if (isWxcard == 1) {
+        dialogText = `是否修改微信卡券"${
+          row.coupon_name
+        }"的启用状态？该过程不可逆！`;
+      } else {
+        dialogText = `是否修改优惠券"${row.coupon_name}"的启用状态?`;
+      }
+      this.$confirm(dialogText, "修改实时生效！", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
         .then(() => {
           this.axios
             .post("coupon/setcupable", {

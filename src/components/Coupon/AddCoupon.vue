@@ -20,7 +20,7 @@
             优惠券基础信息
           </div>
           <el-form-item label="微信卡券">
-            <el-checkbox v-model="isWxcard" :disabled="is_edit">{{isWxcard ? '是':'否'}}</el-checkbox>
+            <el-checkbox v-model="isWxcard" :disabled="is_edit" @change="wxcardChecked">{{isWxcard ? '是':'否'}}</el-checkbox>
           </el-form-item>
           <el-form-item label="卡券logo" v-if="isWxcard">
             <el-upload action="http://upload.qiniup.com"
@@ -132,8 +132,8 @@
 <!-- ////////////////////////////////////////////////////////指定商品 -->
           <el-form-item label="指定商品" style="margin-top:12px;" >
             <el-radio-group  v-model="cuppointradio">
-              <el-radio :disabled="is_edit" :label="9">全部商品</el-radio>
-              <el-radio :disabled="is_edit":label="10">指定商品</el-radio>
+              <el-radio :disabled="isWxcard" :label="9">全部商品</el-radio>
+              <el-radio :disabled="isWxcard":label="10">指定商品</el-radio>
               <el-button style="margin-left:20px" @click="showPointGoodsPopup"
               v-show="cuppointradio == 10" type="primary" size="small" icon="plus">添加商品</el-button>
             </el-radio-group>
@@ -184,8 +184,8 @@
 <!-- ////////////////////////////////////////////////////////指定用户 -->
           <el-form-item label="指定用户" style="margin-top:12px;" >
             <el-radio-group  v-model="cupuserradio">
-              <el-radio :disabled="is_edit" :label="11">不指定</el-radio>
-              <el-radio :disabled="is_edit" :label="12">指定用户</el-radio>
+              <el-radio :disabled="isWxcard" :label="11">不指定</el-radio>
+              <el-radio :disabled="isWxcard" :label="12">指定用户</el-radio>
               <el-button style="margin-left:20px"  @click="showPointUserPopup"
               v-show="cupuserradio == 12" type="primary" size="small" icon="plus">添加用户</el-button>
             </el-radio-group>
@@ -362,6 +362,12 @@ export default {
       this.ruleForm.color = command
     },
     // 颜色选择 END
+    wxcardChecked(checked) {
+      if (checked) {
+        this.cuppointradio = 9;
+        this.cupuserradio = 11;
+      }
+    },
     ////////////////////////////////////////////////编辑时按id查找信息
     getInfo() {
       this.axios
@@ -645,7 +651,7 @@ export default {
     submitForm(formName) {
       // console.log(this.cupfromradio);
       // console.log(this.cuplimtradio);
-      console.log(this.id);
+      // console.log(this.id);
       if (this.id !== 0) {
          if (
             this.ruleForm.logo_url == "" && this.isWxcard ||
@@ -807,7 +813,7 @@ export default {
           // CupTime.end = CupTime.start + (this.ruleForm.datestart * 86400000)
           CupTime.end = "";
           CupTime.create = new Date().getTime();
-          console.log(CupTime);
+          // console.log(CupTime);
         }
 
         let CupState = {}; //状态
@@ -858,7 +864,7 @@ export default {
           })
           .then(res => {
             // console.log(res);
-            if (res.status === 200) {
+            if (res.data.errno == 0) {
               this.$message({
                 type: "success",
                 message: "更新成功!"
