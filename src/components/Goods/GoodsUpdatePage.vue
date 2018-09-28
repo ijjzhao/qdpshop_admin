@@ -343,7 +343,7 @@ export default {
         'X-Nideshop-Token': localStorage.getItem('token') || '',
       }, // 有的图片服务器要求请求头需要有token之类的参数，写在这里
       uploadToken: {
-        token: 'dKawexMpnY_7Zmek8aJ0RbtatIqTIMvyurd2xdXM:GozPjXRiBcYJW4Y53qGtPvHH_XI=:eyJzY29wZSI6InFpbmdkYXBlaSIsImRlYWRsaW5lIjoxODUzMDQzMzU3fQ=='
+        token: ''
       },
       dialogVisibleMain: false, //主图 查看
       PictureCardPreviewMain: '', //主图 查看的链接
@@ -428,7 +428,7 @@ export default {
     } else {
       this.getGoodsInfo()
     }
-    // this.gettoken();
+    this.gettoken();
     this.getsupplier();
     this.findGoodsClassifyFirst()
   },
