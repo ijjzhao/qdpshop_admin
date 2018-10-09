@@ -105,6 +105,10 @@
                     <i class="fa fa-circle"></i>
                     <span>优惠券管理</span>
                 </el-menu-item>
+                <el-menu-item index="/dashboard/CouponBagPage">
+                    <i class="fa fa-circle"></i>
+                    <span>卡包管理</span>
+                </el-menu-item>
                 <el-menu-item index="/dashboard/collagepage">
                     <i class="fa fa-circle"></i>
                     <span>拼团管理</span>

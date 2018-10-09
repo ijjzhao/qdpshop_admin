@@ -317,7 +317,7 @@ export default {
       typechangeTime: 0, //优惠券形式改变过几次
       // 以下是logo 需要的参数
       uploadToken: {
-        token: 'dKawexMpnY_7Zmek8aJ0RbtatIqTIMvyurd2xdXM:GozPjXRiBcYJW4Y53qGtPvHH_XI=:eyJzY29wZSI6InFpbmdkYXBlaSIsImRlYWRsaW5lIjoxODUzMDQzMzU3fQ=='
+        token: ''
       },
       logoImg:[],
       dialogVisibleLogo: false,
@@ -325,7 +325,7 @@ export default {
     };
   },
   mounted() {
-    // this.gettoken();
+    this.gettoken();
     this.id = this.$route.query.id || 0;
     if (this.id !== 0) {
       this.is_edit = true;
@@ -867,7 +867,7 @@ export default {
             if (res.data.errno == 0) {
               this.$message({
                 type: "success",
-                message: "更新成功!"
+                message: "保存成功!"
               });
               this.goBackPage();
             } else {
