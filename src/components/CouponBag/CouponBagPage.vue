@@ -58,13 +58,19 @@
                   </el-table-column>
                   <el-table-column prop="" align="center" width="200" label="有效期">
                     <template slot-scope="scope">
-                      <span>{{tableData[scope.$index].limitDate}}</span>
+                      <span>{{tableData[scope.$index].end_localtime}}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="" align="center" width="133" label="指定卡券">
+                    <template slot-scope="scope">
+                      <el-button style="" v-if="tableData[scope.$index].coupon_ids !== ''" size="small" @click="handlepointcoupon(scope.$index, scope.row)">卡券</el-button>
+                      <div style="width:44px;height:28px;line-height:28px;text-align:center;" v-else >无</div>
                     </template>
                   </el-table-column>
                   <el-table-column prop="" align="center" width="92" label="启用">
                     <template slot-scope="scope">
-                        <el-switch :disabled="false"
-                        v-model="tableData[scope.$index].isabled" @change="changeIsable(scope.$index, scope.row)">
+                        <el-switch
+                        v-model="row[scope.$index].isabled" @change="changeIsable(scope.$index, scope.row)">
                         </el-switch>
                     </template>
                   </el-table-column>
@@ -82,14 +88,14 @@
           </div>
       </div>
 <!-- ////////////////////////////////////////////////////////////////查看指定商品弹层 -->
-      <van-popup v-model="pointgoods">
-        <div class="Cuppointgoods_area">
-          <div class="Cuppointgoods_area_title">
-            指定商品列表
+      <van-popup v-model="pointcoupon">
+        <div class="Cuppointcoupon_area">
+          <div class="Cuppointcoupon_area_title">
+            指定卡券列表
           </div>
-          <div class="Cuppointgoods_area_table">
-            <el-table :data="pointgoodsData" :default-sort = "{prop: 'date', order: 'descending'}" style="width: 100%" border stripe>
-                <el-table-column prop="name" align="center"  label="商品名称" >
+          <div class="Cuppointcoupon_area_table">
+            <el-table :data="pointcouponData" :default-sort = "{prop: 'date', order: 'descending'}" style="width: 100%" border stripe>
+                <el-table-column prop="coupon_name" align="center"  label="卡券名称" >
                 </el-table-column>
             </el-table>
           </div>
@@ -98,11 +104,11 @@
 <!-- ////////////////////////////////////////////////////////////////查看指定用户弹层 -->
 
       <van-popup v-model="pointuser">
-        <div class="Cuppointgoods_area">
-          <div class="Cuppointgoods_area_title">
+        <div class="Cuppointcoupon_area">
+          <div class="Cuppointcoupon_area_title">
             指定用户列表
           </div>
-          <div class="Cuppointgoods_area_table">
+          <div class="Cuppointcoupon_area_table">
             <el-table :data="pointuserData" :default-sort = "{prop: 'date', order: 'descending'}" style="width: 100%" border stripe>
                 <el-table-column prop="nickname" align="center"  label="用户名称" >
                 </el-table-column>
@@ -122,9 +128,9 @@ export default {
     return {
       CouponCategory: "", //卡包
       CouponCategoryList: [], //卡包种类列表
-      pointgoods: false,
+      pointcoupon: false,
       pointuser: false,
-      pointgoodsData: [],
+      pointcouponData: [],
       pointuserData: [],
       page: 1,
       total: 0,
@@ -150,42 +156,16 @@ export default {
         }
       });
     },
-    handlepointgoods(index, row) {
-      // console.log(index,row);
-      // console.log(row.point_goods);
-      this.pointgoods = true;
-      let pointgoodsList = row.point_goods.split(",");
-      //  console.log(pointgoodsList);
+    handlepointcoupon(index, row) {
+      this.pointcoupon = true;
+      let pointcouponList = row.coupon_ids.split(",");
       this.axios
-        .post("coupon/findpointgoods", {
-          id: pointgoodsList
+        .post("couponbag/findpointcoupon", {
+          id: pointcouponList
         })
         .then(res => {
-          //  console.log(res);
-          this.pointgoodsData = res.data.data;
+          this.pointcouponData = res.data.data;
         });
-      // for (var i = 0; i < pointgoodsList.length; i++) {
-      //   // array[i]
-      //
-      //
-      // }
-    },
-    handlepointuser(index, row) {
-      // console.log(index,row);
-      // console.log(row.point_goods);
-      this.pointuser = true;
-      let pointuserList = row.point_user.split(",");
-      for (var i = 0; i < pointuserList.length; i++) {
-        // array[i]
-        this.axios
-          .post("coupon/findpointuser", {
-            id: pointuserList[i]
-          })
-          .then(res => {
-            //  console.log(res);
-            this.pointuserData = res.data.data;
-          });
-      }
     },
     getList() {
       this.axios
@@ -198,7 +178,6 @@ export default {
         .then(response => {
           this.tableData = response.data.data.data;
           for (var i = 0; i < this.tableData.length; i++) {
-            // let isabled = {}
             let obj = {};
             obj.isabled = this.tableData[i].isabled == 1 ? true : false;
             this.tableData[i].create_localtime = this.timestampToTime(
@@ -216,9 +195,11 @@ export default {
               if (new Date().getTime() > this.tableData[i].end_at) {
                 this.tableData[i].end_localtime = "已过期";
                 this.axios
-                  .post("couponbag/setcupable", {
-                    id: this.tableData[i].coupon_id,
-                    data: 0
+                  .post("couponbag/update", {
+                    id: this.tableData[i].id,
+                    form: {
+                      isabled: 0
+                    }
                   })
                   .then(response => {});
                 obj.is_outof = true;
@@ -228,33 +209,30 @@ export default {
                   " 到期 ";
                 obj.is_outof = false;
               }
-
-              this.tableData[i].limitDate = new Date(parseInt(this.tableData[i].start_at)).toLocaleString() + ' - ' + new Date(parseInt(this.tableData[i].end_at)).toLocaleString()
             }
-            // this.row.isabled = this.tableData[i].coupon_isabled
-            if (this.tableData[i].validity_type == 0) {
-              obj.day_type = "固定日期" + "^";
-            } else if (this.tableData[i].validity_type == 1) {
-              obj.day_type = "即时生效" + "^";
-            } else if (this.tableData[i].validity_type == 2) {
-              obj.day_type = "次日生效" + "^";
-            }
-            if (this.tableData[i].coupon_limit == 0) {
-              obj.limit_type = "通用" + "^";
-            } else if (this.tableData[i].coupon_limit == 1) {
-              obj.limit_type =
-                "满" + this.tableData[i].coupon_limit_value + "元" + "^";
-            }
-            if (this.tableData[i].coupon_type == 0) {
-              obj.type =
-                "减" + (this.tableData[i].coupon_value / 1).toFixed(2) + "券";
-            } else if (this.tableData[i].coupon_type == 1) {
-              obj.type = this.tableData[i].coupon_value + "折券";
-            }
+            // if (this.tableData[i].validity_type == 0) {
+            //   obj.day_type = "固定日期" + "^";
+            // } else if (this.tableData[i].validity_type == 1) {
+            //   obj.day_type = "即时生效" + "^";
+            // } else if (this.tableData[i].validity_type == 2) {
+            //   obj.day_type = "次日生效" + "^";
+            // }
+            // if (this.tableData[i].coupon_limit == 0) {
+            //   obj.limit_type = "通用" + "^";
+            // } else if (this.tableData[i].coupon_limit == 1) {
+            //   obj.limit_type =
+            //     "满" + this.tableData[i].coupon_limit_value + "元" + "^";
+            // }
+            // if (this.tableData[i].coupon_type == 0) {
+            //   obj.type =
+            //     "减" + (this.tableData[i].coupon_value / 1).toFixed(2) + "券";
+            // } else if (this.tableData[i].coupon_type == 1) {
+            //   obj.type = this.tableData[i].coupon_value + "折券";
+            // }
             this.row.push(obj);
-            this.tableData[i].disprice = (
-              this.tableData[i].coupon_value / 1
-            ).toFixed(2);
+            // this.tableData[i].disprice = (
+            //   this.tableData[i].coupon_value / 1
+            // ).toFixed(2);
           }
           this.page = response.data.data.currentPage;
           this.total = response.data.data.count;
@@ -355,10 +333,9 @@ export default {
         .then(() => {
           this.axios
             .post("couponbag/delete", {
-              id: row.coupon_id
+              id: row.id
             })
             .then(res => {
-              // console.log(res);
               this.tableData = [];
               this.row = [];
               this.getList();
@@ -395,11 +372,11 @@ export default {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
-.Cuppointgoods_area {
+.Cuppointcoupon_area {
   margin: 12px;
   width: 400px;
 }
-.Cuppointgoods_area_title {
+.Cuppointcoupon_area_title {
   text-align: center;
   font-weight: bold;
   padding: 15px 0 25px 0;

@@ -144,7 +144,6 @@ export default {
       dangerUserData: [], //修改按钮之后的五条数据
       ruleForm: {
         name: "", //名称
-
         datelimit: "", //时间限制
         // datestart: "", //时间开始
         desc: "" //卡包使用说明
@@ -155,8 +154,6 @@ export default {
       is_edit: false,
       datepickerPlaceholder: "点击选择 开始日期 - 结束日期",
       typechangeTime: 0, //卡包形式改变过几次
-      logoImg: [],
-      dialogVisibleLogo: false
     };
   },
   mounted() {
@@ -185,12 +182,31 @@ export default {
           // this.typechangeTime = this.cupfromradio == 1 ? 3 : 2;
           // this.cuplimtradio = res.data.data.coupon_limit == 0 ? 4 : 5;
           this.ruleForm.desc = res.data.data.desc;
-          this.pointCouponList = res.data.data.coupon_ids.split(',');
           let start_at = new Date(parseInt(res.data.data.start_at)).toLocaleString()
           let end_at = new Date(parseInt(res.data.data.end_at)).toLocaleString()
           this.ruleForm.datelimit = [start_at, end_at]
           this.datepickerPlaceholder = start_at + ' - ' + end_at
-          console.log(this.pointCouponList)
+          let coupon_ids = res.data.data.coupon_ids.split(',')
+          this.handlepointcoupon(coupon_ids)
+        });
+    },
+    handlepointcoupon(coupon_ids) {
+      this.axios
+        .post("couponbag/findpointcoupon", {
+          id: coupon_ids
+        })
+        .then(res => {
+          // this.pointcouponData = res.data.data;
+          let data = res.data.data
+          for (let i = 0; i < data.length; i++) {
+            let row = data[i]
+            let obj = {};
+            obj.id = row.id;
+            obj.name = row.coupon_name;
+            // obj.btnType = row.btnType;
+            // obj.btnText = row.btnText;
+            this.pointCouponList.push(obj);
+          }
         });
     },
     ///////////////////////////////////////////////////以下为添加指定卡券
@@ -290,14 +306,11 @@ export default {
       for (var i = 0; i < this.pointCouponList.length; i++) {
         if (this.pointCouponList[i].id === id) {
         } else {
-          console.log(this.pointCouponList[i]);
           let obj = this.pointCouponList[i];
           data.push(obj);
         }
       }
       this.pointCouponList = data;
-      // this.pointCouponList.splice( this.pointCouponList.indexOf( id ), 1 );
-      console.log(this.pointCouponList);
     },
     ///////////////////////////////////////////////////添加指定卡券结束
     timestampToTime(timestamp) {
@@ -342,7 +355,9 @@ export default {
         form.type = this.cupfromradio;
         form.start_at = new Date(this.ruleForm.datelimit[0]).getTime();
         form.end_at = new Date(this.ruleForm.datelimit[1]).getTime();
-        form.coupon_ids = this.pointCouponList.join(',')
+        form.coupon_ids = this.pointCouponList.map((e) => {
+          return e.id
+        }).join(',')
         this.axios
           .post("couponbag/update", {
             id: this.id,
@@ -431,7 +446,9 @@ export default {
         form.type = this.cupfromradio
         form.start_at = CupTime.start
         form.end_at = CupTime.end
-        form.coupon_ids = this.pointCouponList.join(',')
+        form.coupon_ids = this.pointCouponList.map((e) => {
+          return e.id
+        }).join(',')
         //存入数据库
         this.axios
           .post("couponbag/save", {
