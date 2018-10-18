@@ -131,6 +131,10 @@
                     <i class="fa fa-circle"></i>
                     <span>用户列表</span>
                 </el-menu-item>
+                <el-menu-item index="/dashboard/user/info/list">
+                    <i class="fa fa-circle"></i>
+                    <span>档案管理</span>
+                </el-menu-item>
                 <el-menu-item index="/dashboard/user/complaint">
                     <i class="fa fa-circle"></i>
                     <span>用户反馈</span>

@@ -3,7 +3,7 @@
 		<div class="content-nav">
 			<el-breadcrumb class="breadcrumb" separator="/">
 				<el-breadcrumb-item :to="{ path: '/dashboard' }">首页</el-breadcrumb-item>
-				<el-breadcrumb-item>商品管理</el-breadcrumb-item>
+				<el-breadcrumb-item>用户管理</el-breadcrumb-item>
 				<el-breadcrumb-item>会员列表</el-breadcrumb-item>
 			</el-breadcrumb>
 			<div class="operation-nav">
@@ -30,7 +30,7 @@
 				<el-table :data="tableData" :default-sort = "{prop: 'date', order: 'descending'}" style="width: 100%" border stripe>
 					<el-table-column prop="id" label="ID" width="90" sortable align="center">
 					</el-table-column>
-					<el-table-column prop="nickname" label="呢称" align="center">
+					<el-table-column prop="nickname" label="昵称" align="center">
 					</el-table-column>
 					<!-- <el-table-column prop="weixin_openid" label="OpenId"  align="center">
 					</el-table-column> -->

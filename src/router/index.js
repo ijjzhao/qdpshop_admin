@@ -286,6 +286,18 @@ export default new Router({
           // component: require('@/components/User/UserPage')
         },
         {
+          path: 'user/info/list',
+          name: 'userinfo_list',
+          component: resolve => require(['@/components/UserInfo/list'], resolve),
+          // component: require('@/components/User/UserPage')
+        },
+        {
+          path: 'user/info/detail',
+          name: 'userinfo_detail',
+          component: resolve => require(['@/components/UserInfo/detail'], resolve),
+          // component: require('@/components/User/UserPage')
+        },
+        {
           path: 'user/complaint',
           name: 'user_complaint',
           component: resolve => require(['@/components/User/ComplaintPage'], resolve),
