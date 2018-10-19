@@ -19,27 +19,34 @@
           <div class="tiptitle">
             基础信息
           </div>
-          <el-form-item label="昵称" >
-            <el-input style="width:280px;" placeholder="" v-model="ruleForm.name"></el-input>
-          </el-form-item>
-          <el-form-item label="称呼" >
-            <el-input style="width:280px;" placeholder=""></el-input>
-          </el-form-item>
-          <el-form-item label="年龄" >
-            <el-input style="width:280px;" placeholder="" v-model="ruleForm.age"></el-input>
-          </el-form-item>
-          <el-form-item label="职业" >
-            <el-input style="width:280px;" placeholder="" v-model="ruleForm.occupation"></el-input>
-          </el-form-item>
-          <el-form-item label="身高" >
-            <el-input style="width:280px;" placeholder="" v-model="ruleForm.height"></el-input>
-          </el-form-item>
-          <el-form-item label="体重" >
-            <el-input style="width:280px;" placeholder="" v-model="ruleForm.weight"></el-input>
-          </el-form-item>
-          <el-form-item label="细节" >
-            <el-input style="width:280px;" placeholder="" v-model="ruleForm.detail"></el-input>
-          </el-form-item>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="昵称" >
+                <el-input style="width:280px;" placeholder="" v-model="ruleForm.name" readonly></el-input>
+              </el-form-item>
+              <el-form-item label="称呼" >
+                <el-input style="width:280px;" placeholder=""></el-input>
+              </el-form-item>
+              <el-form-item label="职业" >
+                <el-input style="width:280px;" placeholder="" v-model="ruleForm.occupation" readonly></el-input>
+              </el-form-item>
+              <el-form-item label="细节" >
+                <el-input style="width:280px;" placeholder="" v-model="ruleForm.detail" readonly></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="年龄" >
+                <el-input style="width:280px;" placeholder="" v-model="ruleForm.age" readonly></el-input>
+              </el-form-item>
+              <el-form-item label="身高" >
+                <el-input style="width:280px;" placeholder="" v-model="ruleForm.height" readonly></el-input>
+              </el-form-item>
+              <el-form-item label="体重" >
+                <el-input style="width:280px;" placeholder="" v-model="ruleForm.weight" readonly></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+
 <!-- ////////////////////////////////////////////////////////////////////////////////////////基础信息结束 -->
 
           <div class="tiptitle" style="padding-top:10px;padding-bottom:10px;">
@@ -56,44 +63,44 @@
             裁剪偏好
           </div>
           <el-form-item label="裁剪" >
-            <el-input style="width:280px;" placeholder="" v-model="cuts[ruleForm.cut]"></el-input>
+            <el-input style="width:280px;" placeholder="" v-model="cuts[ruleForm.cut]" readonly></el-input>
           </el-form-item>
 
           <div class="tiptitle" style="padding-top:10px;padding-bottom:10px;">
             尺码信息
           </div>
           <el-form-item label="上装" >
-            <el-input style="width:280px;" placeholder="" v-model="ruleForm.upsize"></el-input>
+            <el-input style="width:280px;" placeholder="" v-model="ruleForm.upsize" readonly></el-input>
           </el-form-item>
           <el-form-item label="下装" >
-            <el-input style="width:280px;" placeholder="" v-model="ruleForm.downsize"></el-input>
+            <el-input style="width:280px;" placeholder="" v-model="ruleForm.downsize" readonly></el-input>
           </el-form-item>
           <el-form-item label="鞋子" >
-            <el-input style="width:280px;" placeholder="" v-model="ruleForm.shoesize"></el-input>
+            <el-input style="width:280px;" placeholder="" v-model="ruleForm.shoesize" readonly></el-input>
           </el-form-item>
 
           <div class="tiptitle" style="padding-top:10px;padding-bottom:10px;">
             风格偏好
           </div>
-          <el-form-item label="喜欢风格" >
+          <el-form-item label="喜欢" >
             <div class="pic-container" >
               <img class="style-pic" v-for='item, index in styles[1]' :key='index' :src='stylePics[item].url'>
               </img>
             </div>
           </el-form-item>
-          <el-form-item label="不喜欢风格" >
+          <el-form-item label="不喜欢" >
             <div class="pic-container" >
               <img class="style-pic" v-for='item, index in styles[2]' :key='index' :src='stylePics[item].url'>
               </img>
             </div>
           </el-form-item>
-          <el-form-item label="可以尝试的风格" >
+          <el-form-item label="可以尝试" >
             <div class="pic-container" >
               <img class="style-pic" v-for='item, index in styles[3]' :key='index' :src='stylePics[item].url'>
               </img>
             </div>
           </el-form-item>
-          <el-form-item label="没有选择的风格" >
+          <el-form-item label="没有选择" >
             <div class="pic-container" >
               <img class="style-pic" v-for='item, index in styles[0]' :key='index' :src='stylePics[item].url'>
               </img>
@@ -303,7 +310,7 @@ export default {
 
 .body-pic {
   width: 350px;
-  height: 350px;
+  /* height: 350px; */
   margin: 10px;
   border: 1px solid gray;
 }
