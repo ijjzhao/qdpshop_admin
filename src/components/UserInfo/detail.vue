@@ -25,7 +25,7 @@
                 <el-input style="width:280px;" placeholder="" v-model="ruleForm.name" readonly></el-input>
               </el-form-item>
               <el-form-item label="称呼" >
-                <el-input style="width:280px;" placeholder=""></el-input>
+                <el-input style="width:280px;" placeholder="" readonly></el-input>
               </el-form-item>
               <el-form-item label="职业" >
                 <el-input style="width:280px;" placeholder="" v-model="ruleForm.occupation" readonly></el-input>
@@ -206,13 +206,17 @@ export default {
           this.ruleForm.age = data.age;
           this.ruleForm.height = data.height;
           this.ruleForm.weight = data.weight;
-          this.ruleForm.detail = JSON.parse(data.detail).join(', ');
+          if (data.detail) {
+            this.ruleForm.detail = JSON.parse(data.detail).join(', ');
+          }
 
-          let colorArr = JSON.parse(data.color)
           let colorDislikeArr = []
-          for (let i in colorArr) {
-            if (colorArr[i] == 2) {
-              colorDislikeArr.push(this.colors[i])
+          if (data.color) {
+            let colorArr = JSON.parse(data.color)
+            for (let i in colorArr) {
+              if (colorArr[i] == 2) {
+                colorDislikeArr.push(this.colors[i])
+              }
             }
           }
           this.ruleForm.colorDislikeArr = colorDislikeArr;
@@ -233,12 +237,14 @@ export default {
           //     break;
           // }
 
-          this.ruleForm.size = JSON.parse(data.size)
           this.ruleForm.upsize = ''
           this.ruleForm.downsize = ''
           this.ruleForm.shoesize = ''
-          if (this.ruleForm.size[0] != -1) this.ruleForm.upsize = this.sizes[this.ruleForm.size[0]].name
-          if (this.ruleForm.size[1] != -1) this.ruleForm.downsize = this.sizes[this.ruleForm.size[1]].name
+          if (data.size) {
+            this.ruleForm.size = JSON.parse(data.size)
+            if (this.ruleForm.size[0] != -1) this.ruleForm.upsize = this.sizes[this.ruleForm.size[0]].name
+            if (this.ruleForm.size[1] != -1) this.ruleForm.downsize = this.sizes[this.ruleForm.size[1]].name
+          }
 
           if (data.style) {
             this.ruleForm.style = JSON.parse(data.style)
