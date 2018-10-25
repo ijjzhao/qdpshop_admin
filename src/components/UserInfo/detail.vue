@@ -251,6 +251,8 @@ export default {
             for (let i in this.ruleForm.style) {
               this.styles[this.ruleForm.style[i]].push(i)
             }
+          } else {
+            this.styles = [ [], [], [], [] ]
           }
 
           if (data.pics) {
